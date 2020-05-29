@@ -70,14 +70,13 @@ let rec calc_quantity = function
       Coeff.r_coeff_1
   | CoeffS stack ->
       Coeff.mul (calc_quantity stack) Coeff.r_coeff
-  | ClosureS (_, stack) ->
-      calc_quantity stack
-  | SuccS stack ->
-      calc_quantity stack
-  | LetS (_, _, _, stack) ->
-      calc_quantity stack
+  | ClosureS (_, stack)
+  | SuccS stack
+  | LetS (_, _, _, stack)
   | CaseS (_, _, _, _, stack) ->
       calc_quantity stack
+
+let is_value = function Lambda (_, _) | Nat _ | Exp _ -> true | _ -> false
 
 let rec eval quantity = function
   | Var x, (Env env_l as env), stack when List.mem_assoc x env_l ->
@@ -107,7 +106,7 @@ let rec eval quantity = function
       eval quantity (e, env, CoeffS stack)
   | Obs e, env, stack ->
       eval (Coeff.add (calc_quantity stack) quantity) (e, env, stack)
-  | e, env, CoeffS stack ->
+  | e, env, CoeffS stack when is_value e ->
       eval quantity (Coeff.coeff_handler e, env, stack)
   | config ->
       (config, quantity)
@@ -119,10 +118,10 @@ let exp =
         , Lambda
             ( "a"
             , Case
-                ( Coeff (Obs (Var "a"))
+                ( Coeff (Var "a")
                 , App (Coeff (Var "f"), Succ (Coeff (Var "a")))
                 , "x"
-                , Coeff (Var "a") ) ) )
+                , Coeff (Obs (Var "a")) ) ) )
     , Nat Z )
 
 let _ =

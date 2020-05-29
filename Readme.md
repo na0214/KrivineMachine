@@ -13,7 +13,7 @@ $ dune build
 # Usage
 
 ```bash
-_build/default/krivine.exe
+dune exec ./krivine.exe
 ```
 
 If you want to use a custom coeffect handler,please change the definition of module Coeff in the krivine.ml.
