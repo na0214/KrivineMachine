@@ -19,7 +19,7 @@ end = struct
 
   let r_coeff_1 = 1.0
 
-  let r_coeff = 0.1
+  let r_coeff = 0.5
 
   let coeff_handler x = x
 
@@ -78,7 +78,13 @@ let rec calc_quantity = function
 
 let is_value = function Lambda (_, _) | Nat _ | Exp _ -> true | _ -> false
 
-let rec eval quantity = function
+let obs_count = ref 0
+
+let rec eval quantity config =
+  print_string
+    ( show_expr (match config with e, _, _ -> e)
+    ^ " : " ^ Coeff.show quantity ^ "\n" ) ;
+  match config with
   | Var x, (Env env_l as env), stack when List.mem_assoc x env_l ->
       let new_expr, new_env = search_env x env in
       eval quantity (new_expr, new_env, stack)
@@ -105,6 +111,7 @@ let rec eval quantity = function
   | Coeff e, env, stack ->
       eval quantity (e, env, CoeffS stack)
   | Obs e, env, stack ->
+      obs_count := !obs_count + 1 ;
       eval (Coeff.add (calc_quantity stack) quantity) (e, env, stack)
   | e, env, CoeffS stack when is_value e ->
       eval quantity (Coeff.coeff_handler e, env, stack)
@@ -119,13 +126,10 @@ let exp_fix_1 =
             ( "a"
             , Case
                 ( Coeff (Obs (Var "a"))
-                , App (Coeff (Var "f"), Succ (Coeff (Obs (Var "a"))))
+                , Coeff (App (Coeff (Var "f"), Succ (Coeff (Obs (Var "a")))))
                 , "x"
-                , App
-                    ( App
-                        ( Lambda ("x", Lambda ("y", Var "x"))
-                        , Coeff (Obs (Var "a")) )
-                    , Coeff (Obs (Var "a")) ) ) ) )
+                , Coeff (App (Coeff (Var "f"), Nat Z)) ) ) )
+      (*, Coeff (Obs (Var "a")) ) ) )*)
     , Nat Z )
 
 let exp_fix_2 =
@@ -136,15 +140,9 @@ let exp_fix_2 =
             ( "a"
             , Case
                 ( Coeff (Obs (Var "a"))
-                , App (Coeff (Var "f"), Succ (Coeff (Obs (Var "a"))))
+                , Coeff (App (Var "f", Succ (Coeff (Obs (Var "a")))))
                 , "x"
-                , App
-                    ( App
-                        ( App
-                            ( Lambda ("x", Lambda ("y", Lambda ("z", Var "x")))
-                            , Coeff (Obs (Var "a")) )
-                        , Coeff (Obs (Var "a")) )
-                    , Coeff (Obs (Var "a")) ) ) ) )
+                , Coeff (Obs (Var "a")) ) ) )
     , Nat Z )
 
 let exp = exp_fix_1
@@ -152,4 +150,4 @@ let exp = exp_fix_1
 let _ =
   eval Coeff.r_coeff_0 (exp, Env [], EmptyS)
   |> show_result
-  |> fun x -> x ^ "\n" |> print_string
+  |> fun x -> x ^ "\n" ^ string_of_int !obs_count ^ "\n" |> print_string
