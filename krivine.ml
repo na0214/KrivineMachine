@@ -29,6 +29,8 @@ and stack =
   | CaseS of expr * string * expr * env * stack
 [@@deriving show]
 
+let coeff_handler expr = expr
+
 let search_env name = function Env env -> List.assoc name env
 
 let add_env name closure = function Env env -> Env ((name, closure) :: env)
@@ -66,6 +68,17 @@ let rec eval = function
   | config ->
       config
 
-let test_expr = App (Lambda ("x", Var "x"), Nat Z)
+let exp =
+  App
+    ( Fix
+        ( "f"
+        , Lambda
+            ( "a"
+            , Case
+                ( Coeff (Obs (Var "a"))
+                , App (Coeff (Obs (Var "f")), Succ (Coeff (Obs (Var "a"))))
+                , "x"
+                , Coeff (Obs (Var "a")) ) ) )
+    , Nat Z )
 
-let _ = eval (test_expr, Env [], EmptyS) |> show_configure |> print_string
+let _ = eval (exp, Env [], EmptyS) |> show_configure |> print_string
