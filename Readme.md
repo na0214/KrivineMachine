@@ -16,5 +16,6 @@ $ dune build
 _build/default/krivine.exe
 ```
 
-If you want to use a custom coeffect handler,please change the definition of coeff_handler in the krivine.ml.
+If you want to use a custom coeffect handler,please change the definition of module Coeff in the krivine.ml.
+
 As well,if you want to evaluate a custom expression,please change the definition of exp in the krivine.ml.
