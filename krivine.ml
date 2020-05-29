@@ -120,9 +120,9 @@ let exp =
             ( "a"
             , Case
                 ( Coeff (Obs (Var "a"))
-                , App (Coeff (Obs (Var "f")), Succ (Coeff (Obs (Var "a"))))
+                , App (Coeff (Var "f"), Succ (Coeff (Var "a")))
                 , "x"
-                , Coeff (Obs (Var "a")) ) ) )
+                , Coeff (Var "a") ) ) )
     , Nat Z )
 
 let _ =
