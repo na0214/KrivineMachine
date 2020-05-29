@@ -19,7 +19,7 @@ end = struct
 
   let r_coeff_1 = 1.0
 
-  let r_coeff = 0.5
+  let r_coeff = 0.1
 
   let coeff_handler x = x
 
@@ -111,18 +111,43 @@ let rec eval quantity = function
   | config ->
       (config, quantity)
 
-let exp =
+let exp_fix_1 =
   App
     ( Fix
         ( "f"
         , Lambda
             ( "a"
             , Case
-                ( Coeff (Var "a")
-                , App (Coeff (Var "f"), Succ (Coeff (Var "a")))
+                ( Coeff (Obs (Var "a"))
+                , App (Coeff (Var "f"), Succ (Coeff (Obs (Var "a"))))
                 , "x"
-                , Coeff (Obs (Var "a")) ) ) )
+                , App
+                    ( App
+                        ( Lambda ("x", Lambda ("y", Var "x"))
+                        , Coeff (Obs (Var "a")) )
+                    , Coeff (Obs (Var "a")) ) ) ) )
     , Nat Z )
+
+let exp_fix_2 =
+  App
+    ( Fix
+        ( "f"
+        , Lambda
+            ( "a"
+            , Case
+                ( Coeff (Obs (Var "a"))
+                , App (Coeff (Var "f"), Succ (Coeff (Obs (Var "a"))))
+                , "x"
+                , App
+                    ( App
+                        ( App
+                            ( Lambda ("x", Lambda ("y", Lambda ("z", Var "x")))
+                            , Coeff (Obs (Var "a")) )
+                        , Coeff (Obs (Var "a")) )
+                    , Coeff (Obs (Var "a")) ) ) ) )
+    , Nat Z )
+
+let exp = exp_fix_1
 
 let _ =
   eval Coeff.r_coeff_0 (exp, Env [], EmptyS)
